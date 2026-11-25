@@ -1,0 +1,29 @@
+# Debug profile for the neural extension: pre-2017 SPX only, tiny budgets.  Never a source of results.
+extends: nn.yaml
+profile: nn_dev
+panel_tag: dev
+sample:
+  end: "2016-12-31"
+  oos_start: "2015-01-01"
+walk_forward:
+  val_years: 1
+neural:
+  max_epochs: 150
+  eval_every: 25
+  patience: 50
+families:
+  mlp: {n_candidates: 2}
+  tcn: {n_candidates: 2}
+  attn: {n_candidates: 2}
+response:
+  reliance_draws: 3
+  shapley_every: 40
+  shapley_top_m: 30
+placebo:
+  n_draws: {cond_block: 2, cond_iid: 0}
+bootstrap:
+  n: 100
+refit_bootstrap:
+  n: {mlp: 2, tcn: 2, attn: 2}
+multiplicity:
+  bag_replicates: 1

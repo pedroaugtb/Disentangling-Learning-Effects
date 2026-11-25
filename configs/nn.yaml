@@ -1,0 +1,61 @@
+# Addendum A (docs/PREANALYSIS.md): small neural forecasters, a declared extension of WP7.
+# Written on 2026-11-05, AFTER the SPX core results were seen and BEFORE any neural model was fitted
+# or any NDX model was run.  For SPX it is a robustness analysis; for NDX it is declared in advance.
+# Everything not listed here is inherited unchanged from primary.yaml.
+# 2026-11-11: attention dropped for compute (about 75% of the GPU budget) before any neural
+# result existed; profile renamed nn2 so the partial results/nn run is never mixed in.
+extends: primary.yaml
+profile: nn2
+panel_tag: primary                # same panels as the core study
+
+core_families: [mlp, tcn]
+benchmarks: []
+extra_forecast_families: []
+sensitivity_specs: []
+
+specs:
+  primary: {target: Y30, v_col: V, seq_len: 66}   # sequence models read the last 66 daily returns
+
+# Quarterly refits keep the GPU budget feasible; the core multiplicity run found monthly and
+# quarterly refits nearly identical (window_quarterly variants).
+walk_forward:
+  refit: quarter
+  retune_every: 4                 # still one retune per year
+
+neural:
+  n_members: 8                    # ensemble members trained jointly; forecast = their mean level
+  max_epochs: 3000
+  eval_every: 25
+  patience: 300
+  predict_chunk: 512
+
+families:
+  mlp:
+    n_candidates: 12
+    space:
+      hidden: [16, 32, 64]
+      depth: [1, 2]
+      lr: [0.001, 0.003]
+      weight_decay: [0.0001, 0.001, 0.01]
+  tcn:
+    n_candidates: 12              # the whole grid
+    space:
+      hidden: [8, 16]
+      lr: [0.001, 0.003]
+      weight_decay: [0.0001, 0.001, 0.01]
+
+response:
+  shapley_every: 10
+
+placebo:
+  n_draws: {cond_block: 200, cond_iid: 0}      # p resolution 0.005; iid draws off
+  displaced_lags: [252]
+
+refit_bootstrap:
+  n: {mlp: 100, tcn: 100}
+
+multiplicity:
+  bag_replicates: 3
+  near_equiv_ranks: [2]
+  alt_windows: {}
+  extra_families: []

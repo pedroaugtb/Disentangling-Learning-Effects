@@ -1,0 +1,72 @@
+{
+  "cboe_RVX.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "1bfbd6f910a90fe49cd4783b0505b192b4e40f6f6a2f4d61fc05d5f8231fb9a2",
+    "source": "https://cdn.cboe.com/api/global/us_indices/daily_prices/RVX_History.csv"
+  },
+  "cboe_VIX.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "2b76ef381fbff39fa7a500d4973d01952ccb47368a27b603b88e6bc78e990b42",
+    "source": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv"
+  },
+  "cboe_VXN.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "d4e5bd0d49190c143cb76c80ffb0e63113eff0f793b1f5686decedc59c1c305f",
+    "source": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VXN_History.csv"
+  },
+  "fred_NASDAQ100.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "527e6a3e3497729163d4f4a780dc43e8dd2a71c0146aa1124b4da7022c0822b5",
+    "source": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NASDAQ100"
+  },
+  "fred_RVXCLS.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "752d9d48f7fd0cc2ffbb8c93a718e1e88d805f31a9790a1b8186dfc41b772373",
+    "source": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=RVXCLS"
+  },
+  "fred_SP500.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "26519bd48dcef6e7be87b4d6df130586af7ce3008ca16dd53394091904596f58",
+    "source": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500"
+  },
+  "fred_VIXCLS.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "94dd44a77d3969d0f24a0bea3619aa589f7f1d7787c53403b444b4e4ebf53d17",
+    "source": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS"
+  },
+  "fred_VXNCLS.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "a718172d8ee05afb34ea01aae78468bfbb5db4433a51db4a70db257cf35a31f9",
+    "source": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=VXNCLS"
+  },
+  "yahoo_GSPC.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "97c94b81c994cf8acf0d6fa995550be2d585a1aa2c6ccf3aab1a7f6f4de3868c",
+    "source": "yahoo:^GSPC"
+  },
+  "yahoo_IWM.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "45614e6789efe415d8093abc78b5937feab4841a5cd1173d57b3c97f10d5bd7f",
+    "source": "yahoo:IWM"
+  },
+  "yahoo_NDX.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "77d68251ed4ca519c3046dcd27253d1fd2aa059b3655136a103bb11f1890f52b",
+    "source": "yahoo:^NDX"
+  },
+  "yahoo_QQQ.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "76d90c5b7bcd13fe3c1657b1799b2be3a15db5b5a3ab66438009c604092190de",
+    "source": "yahoo:QQQ"
+  },
+  "yahoo_RUT.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "4edf8f7ec82998064effc80fb9940494d5b1ff4aa42d94b9ff00fa1dda395f4c",
+    "source": "yahoo:^RUT"
+  },
+  "yahoo_SPY.csv": {
+    "retrieved_utc": "2026-11-03T19:30:26+00:00",
+    "sha256": "d670d197934aca99924d59e707b0bb2684f06befdaeab2ace2972a4474702fbd",
+    "source": "yahoo:SPY"
+  }
+}

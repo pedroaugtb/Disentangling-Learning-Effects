@@ -1,0 +1,156 @@
+# Pre-analysis configuration for the daily equity-index behavioral study.
+# Fixed BEFORE any result from the 2017+ test period (SPX) or any NDX model run is
+# examined.  Every output file records the sha256 of the merged config, so a later
+# edit is visible in the manifests.  See docs/PREANALYSIS.md for the hierarchy.
+profile: primary
+seed: 20261103
+
+sample:
+  download_start: "2007-01-01"   # pre-2010 data serve feature warm-up and displaced placebos only
+  start: "2010-01-01"            # first eligible forecast origin
+  end: "2025-12-31"              # no observation after this date enters a label or a feature
+  oos_start: "2017-01-01"        # first out-of-sample forecast origin
+
+assets:
+  SPX: {yahoo: "^GSPC", iv: VIX, fred_iv: VIXCLS, fred_index: SP500, role: primary}
+  NDX: {yahoo: "^NDX", iv: VXN, fred_iv: VXNCLS, fred_index: NASDAQ100, role: replication}
+  RUT: {yahoo: "^RUT", iv: RVX, fred_iv: RVXCLS, fred_index: null, role: optional}
+
+walk_forward:
+  window: expanding              # {expanding, rolling}
+  rolling_years: 5               # only used when window == rolling
+  refit: month                   # {month, quarter}; fit on the first trading day of each block
+  retune_every: 12               # retune hyperparameters every 12 refit blocks (annually)
+  val_years: 2                   # nested validation = last 2 years of eligible labels
+
+floor_frac: 0.25                 # forecast floor = floor_frac * q01(training Y), identical across families
+
+families:
+  har: {}
+  enet:
+    alphas: [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5]
+    l1_ratios: [0.1, 0.5, 0.9]
+    max_outer: 60
+  xgb:
+    n_candidates: 40             # same candidate list for f0 and f1
+    max_rounds: 1500
+    patience: 100
+    n_bag: 5                     # forecast = mean over bag; identical seeds for f0 and f1
+    space:
+      max_depth: [2, 3, 4]
+      eta: [0.01, 0.03, 0.05]
+      min_child_weight: [5, 20, 50]
+      subsample: [0.7, 0.9]
+      colsample_bytree: [0.7, 1.0]
+      lambda: [1.0, 10.0]
+  hgb:                           # credible alternative tree learner, WP7 only
+    n_candidates: 20
+    max_rounds: 1500
+    n_bag: 1
+    space:
+      max_depth: [2, 3, 4]
+      learning_rate: [0.01, 0.03, 0.05]
+      min_samples_leaf: [5, 20, 50]
+      l2_regularization: [1.0, 10.0]
+
+core_families: [har, enet, xgb]
+benchmarks: [ivonly, rwrv, histmean]
+
+# Spec = departure from the primary design.  `primary` is the only confirmatory spec.
+specs:
+  primary:      {target: Y30, v_col: V}
+  vlag1:        {target: Y30, v_col: V_lag1}        # conservative one-session lag of the IV close
+  rolling5y:    {target: Y30, v_col: V, window: rolling, rolling_years: 5}
+  vol_level:    {target: Y30, v_col: V_vol}         # I/100: non-affine alternative to the variance scale
+  weekday_cal:  {target: Y30, v_col: V_wkcal}       # (I/100)^2 * weekdays(t, t+30]/261, known ex ante
+  garch:        {target: Y30, v_col: V_garch}       # non-option, price-only control signal
+  h5td:         {target: Y5td, v_col: V}            # horizon-mismatched secondary target
+  h10td:        {target: Y10td, v_col: V}           # horizon-mismatched secondary target
+sensitivity_specs: [vlag1, rolling5y, vol_level, weekday_cal, garch, h5td, h10td]
+log_target_families: [har_log, xgb_log]             # read separately; not E[Y|.] estimators
+
+conditional:
+  n_draws: 200                   # deterministic quantile grid of training residuals (law A)
+  kernel_top_m: 300              # law B: largest-weight training points kept per origin
+  kernel_bandwidths: [0.3, 0.45, 0.65, 0.9, 1.3, 1.8, 2.5]
+  support_k: 20
+  support_q: 0.99                # x is supported if its k-NN distance <= q99 of the training LOO distances
+  min_neff: 30                   # law B quantities need this Kish effective neighbourhood
+  pit_lo: 0.005                  # (x, v) supported if PIT under law A is inside [pit_lo, pit_hi]
+  pit_hi: 0.995
+
+response:
+  primary_features: [rv_w, rv_m, rv_neg_w]   # P2: 5d and 22d persistence, recent negative returns
+  secondary_features: [rv_d, ret_1, ret_5, dd_22]
+  n_bins: 10                     # training-quantile bins; edges re-estimated each fold
+  slope_from_bin: 1              # S_k runs from the q10 edge ...
+  slope_to_bin: 9                # ... to the q90 edge
+  min_bin_count: 20              # bins with fewer OOS dates are withheld
+  ale2d_pairs: [[rv_m, V], [rv_neg_w, V], [rv_w, rv_neg_w]]
+  ale2d_bins: 5
+  reliance_draws: 20
+  reliance_groups:
+    persistence: [rv_d, rv_w, rv_m]
+    downside: [rv_neg_w, dd_22]
+    returns: [ret_1, ret_5]
+  shapley_every: 5               # conditional group Shapley on every 5th OOS date
+  shapley_top_m: 100
+
+placebo:
+  n_draws:                       # 500 gives p resolution 0.002, room for Holm across nine cells
+    cond_block: 500              # moving blocks of training residuals: keeps surprise persistence
+    cond_iid: 200
+  block: 22
+  primary_kind: cond_block
+  displaced_lags: [63, 126, 252, 504]
+  level: 0.95
+
+matching:
+  k_caliper: 20                  # caliper = median training distance to the 20th nearest neighbour
+  k_caliper_sensitivity: [5, 50]
+  delta_quantile: 0.5            # |d eps| threshold = this quantile of |eps_i - eps_j| in training
+  max_partners: 5                # nearest partners kept per anchor date
+  max_gap_years: 3
+
+bootstrap:
+  n: 2000
+  block_lengths: [21, 42, 63, 126]
+  primary_block: 63
+  hac_lags: [21, 42, 63]
+
+refit_bootstrap:
+  n: {har: 500, enet: 500, xgb: 200}
+  block: 42
+
+multiplicity:
+  bag_replicates: 10             # independent xgb bags (fit variability)
+  near_equiv_ranks: [2, 3, 4, 5] # k-th best validation configuration (tuning perturbation)
+  near_equiv_tolerance: 0.01     # ... only if its validation QLIKE is within 1% of the best
+  alt_windows:
+    rolling5y: {window: rolling, rolling_years: 5}
+    rolling7y: {window: rolling, rolling_years: 7}
+    quarterly: {refit: quarter, retune_every: 4}
+
+preonset:                        # WP6, exploratory
+  shock_quantile: 0.99           # daily r^2 above the training q99 is a shock
+  refractory: 60                 # trading days without a shock before an onset counts
+  window: 22                     # pre-onset window and alert validity window
+  n_controls: 3
+  alert_quantiles: [0.70, 0.80, 0.85, 0.90, 0.95, 0.975]
+
+simulation:
+  n_reps: 500
+  n_train: 1760                  # about 2010-2016
+  n_test: 2250                   # about 2017-2025
+  n_long: 50000                  # independent path approximating population values of a fitted pair
+  gamma_shape: 5.0
+  overlap: 21
+  informative_b: [0.10, 0.25]
+  state_kappa: 0.8
+  rho_eps: 0.90
+  xgb: {max_depth: 3, eta: 0.03, min_child_weight: 20, subsample: 0.8, colsample_bytree: 0.8, lambda: 5.0, rounds: 300, n_bag: 3}
+  enet: {alpha_light: 0.005, alpha_heavy: 0.1, l1_ratio: 0.5}
+  placebo_reps: 100              # placebo-gate operating characteristics
+  placebo_draws: 50
+  bootstrap_n: 500
+  bootstrap_block: 63

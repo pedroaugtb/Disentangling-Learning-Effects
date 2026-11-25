@@ -1,0 +1,52 @@
+# Addendum C (docs/PREANALYSIS.md): teacher / input decomposition of the gain from V.
+# Written on 2026-11-17, after the core, sensitivity and nn2-SPX behavioral results had been seen
+# and BEFORE any loss of the projection P1 was computed on any test period.
+# Kept apart from primary.yaml so the config hashes of finished profiles do not change; every
+# Addendum C output records the hash of this file in its manifest.
+written: "2026-11-17"
+
+confirmatory:
+  config: primary.yaml
+  assets: [SPX, NDX]             # both enter the Holm families: no P1 loss was seen on either
+  spec: primary
+  families: [har, enet, xgb]
+  alpha: 0.05
+  block: 63                      # primary block length, as in the hierarchy
+  margin_rel: 0.05               # non-superiority margin for the input gain: 5% of L(f0)
+  max_false_detection: 0.10      # a family whose C1 rule fires more often than this under the
+                                 # simulated redundant design is downgraded to "not claimable"
+
+# Learner in the simulation that stands for each real family (enet: the worse of the two).
+simulation_proxy:
+  har: [har]
+  enet: [enet_light, enet_heavy]
+  xgb: [xgb]
+
+observed:
+  specs: [primary, vlag1, rolling5y, vol_level, weekday_cal, garch, h5td, h10td]
+  extra_families: {primary: [har_ols]}     # theory anchor: zero teacher gain under a linear law
+
+placebo:                         # draws, seeds and kind are those of the profile's own placebo
+  kind: cond_block
+  specs: [primary, garch, h5td, h10td]
+
+refit:
+  specs: [primary]               # combined (refit + date) uncertainty for the confirmatory cells
+
+recalibration:
+  min_closed: 250                # closed OOS labels needed before a real-time level correction
+
+neural:                          # Addendum A families; secondary, date bootstrap and placebo only
+  config: nn.yaml
+  assets: [SPX, NDX]
+  families: [mlp, tcn]
+  placebo_specs: [primary]
+
+simulation:
+  n_reps: 500
+  chunk: 50                      # replicates per resumable output file
+  n_pop: 20000                   # rows of the independent long path used for population values
+  pop_grid: 100                  # true-law grid for population projections
+  placebo_reps: 100              # replicates that also run the placebo part of the C1/C2 rules
+  placebo_draws: 50
+  placebo_learners: [har, enet_light, enet_heavy, xgb]

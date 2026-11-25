@@ -1,0 +1,23 @@
+# Addendum D (docs/PREANALYSIS.md): post-hoc confirmation of the short-horizon input gain.
+# Written on 2026-11-18, AFTER the Addendum C results had been seen, including the date-bootstrap
+# and placebo decompositions of the h5td and h10td specs (secondary in Addendum C), and BEFORE any
+# refit-bootstrap draw of those specs was computed.  Its claims carry less weight than Addendum C:
+# the cells were chosen after a look at the data.  Every output records the hash of this file.
+written: "2026-11-18"
+
+confirmatory:
+  config: primary.yaml
+  assets: [SPX, NDX]
+  specs: [h5td, h10td]           # both horizons, so the 10-day cells guard against picking the best one
+  families: [har, enet, xgb]     # same learners as Addendum C; Holm across all 12 cells
+  alpha: 0.05
+  block: 63
+  max_false_detection: 0.10      # same simulation downgrade as C1 (simulated at the 30-day horizon)
+
+simulation_proxy:
+  har: [har]
+  enet: [enet_light, enet_heavy]
+  xgb: [xgb]
+
+# Descriptive term structure: the confirmatory 30-day cells of Addendum C next to these.
+term_structure_specs: [h5td, h10td, primary]

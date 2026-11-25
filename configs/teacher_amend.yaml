@@ -1,0 +1,14 @@
+# Addendum E (docs/PREANALYSIS.md): refit-bootstrap budget of the teacher / input claims.
+# Written on 2026-11-21, AFTER the Addendum C and D results had been seen.  It changes no rule,
+# cell, statistic, seed or alpha: only the number of refit+date draws behind the p-values.
+# Reason (mechanical): a percentile p-value from B draws cannot fall below 2/(B+1).  With the
+# original 200 xgb draws that floor is 0.00995, i.e. 0.060 after Holm over the 6 cells of
+# Addendum C and 0.119 over the 12 cells of Addendum D, so those cells could never be claimed.
+# With 2000 draws the floor is 0.0010 (0.006 and 0.012 after Holm).  Draws are indexed by seed,
+# so draws 0..199 (xgb) and 0..499 (har, enet) are kept and new draws are appended.
+written: "2026-11-21"
+refit_draws: 2000                 # every family; equals the date-bootstrap budget
+assets: [SPX, NDX]
+specs: [primary, h5td, h10td]     # Addendum C (primary) and Addendum D (h5td, h10td) cells
+families: [har, enet, xgb]
+snapshot_dir: pre_addendumE       # results/primary/<this>/: the claims as computed before Addendum E

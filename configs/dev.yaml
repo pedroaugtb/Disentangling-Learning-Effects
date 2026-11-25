@@ -1,0 +1,56 @@
+# Development profile: exercises every code path on PRE-2017 data only, so the design can
+# be debugged without looking at the 2017+ test period.  Never a source of paper results.
+extends: primary.yaml
+profile: dev
+
+sample:
+  end: "2016-12-31"
+  oos_start: "2015-01-01"
+
+walk_forward:
+  val_years: 1
+
+families:
+  enet:
+    alphas: [0.005, 0.05, 0.5]
+    l1_ratios: [0.5]
+    max_outer: 30
+  xgb:
+    n_candidates: 3
+    max_rounds: 300
+    patience: 30
+    n_bag: 2
+  hgb:
+    n_candidates: 2
+    max_rounds: 200
+    n_bag: 1
+
+response:
+  reliance_draws: 3
+  shapley_every: 40
+  shapley_top_m: 30
+
+placebo:
+  n_draws: {cond_block: 4, cond_iid: 2}
+
+bootstrap:
+  n: 200
+
+refit_bootstrap:
+  n: {har: 4, enet: 3, xgb: 2}
+
+multiplicity:
+  bag_replicates: 2
+  near_equiv_ranks: [2]
+  alt_windows:
+    rolling5y: {window: rolling, rolling_years: 3}
+
+simulation:
+  n_reps: 4
+  n_train: 800
+  n_test: 500
+  n_long: 2000
+  xgb: {max_depth: 3, eta: 0.05, min_child_weight: 20, subsample: 0.8, colsample_bytree: 0.8, lambda: 5.0, rounds: 80, n_bag: 1}
+  placebo_reps: 2
+  placebo_draws: 3
+  bootstrap_n: 50
